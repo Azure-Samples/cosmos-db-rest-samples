@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "CosmosTest": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "Cosmos:AccountName": "",
+        "Cosmos:Key": ""
+      }
+    }
+  }
+}

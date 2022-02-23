@@ -1,3 +1,6 @@
-# Repository setup required :wave:
-      
-Please visit the website URL :point_right: for this repository to complete the setup of this repository and configure access controls.
+# Samples for using REST calls against CosmosDB
+
+## Running the project
+To run the sample, you must update the environment variables to include your account details (name, key, database and container)
+Please see `Properties/launchSettings.template.json`. Rename the file to `Properties/launchSettings.json` (gitignored) and fill in the details then run.
+
