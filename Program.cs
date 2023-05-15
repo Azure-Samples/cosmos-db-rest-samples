@@ -32,7 +32,9 @@ await GetContainer(databaseId, containerId);
 await GetContainerPartitionKeys(databaseId, containerId);
 
 await CreateStoredProcedure(databaseId, containerId, "sproc1");
+await ExecuteStoredProcedure(databaseId, containerId, "sproc1");
 await DeleteStoredProcedure(databaseId, containerId, "sproc1");
+
 
 await CreateDocument(item1);
 await CreateDocument(item2);
@@ -288,7 +290,7 @@ async Task CreateStoredProcedure(string databaseId, string containerId, string s
 
     var requestUri = new Uri($"{baseUrl}/{resourceLink}/sprocs");
     var requestBody = $@"{{
-    ""body"": ""function () {{ var context = getContext(); var response = context.getResponse(); response.setBody(\""Hello, World\"");}}"",
+    ""body"": ""function (testParam) {{ var context = getContext(); var response = context.getResponse(); response.setBody(\""Hello, \""+testParam);}}"",
     ""id"":""{storedProcedureName}""
 }}";
 
@@ -319,6 +321,31 @@ async Task DeleteStoredProcedure(string databaseId, string containerId, string s
 
     var httpResponse = await httpClient.SendAsync(httpRequest);
     await ReportOutput($"Delete Stored Procedure '{storedProcedureName}", httpResponse);
+}
+
+async Task ExecuteStoredProcedure(string databaseId, string containerId, string storedProcedureName)
+{
+    var method = HttpMethod.Post;
+
+    var resourceType = ResourceType.sprocs;
+    var resourceLink = $"dbs/{databaseId}/colls/{containerId}/sprocs/{storedProcedureName}";
+    var requestDateString = DateTime.UtcNow.ToString("r");
+    var auth = GenerateMasterKeyAuthorizationSignature(method, resourceType, resourceLink, requestDateString, cosmosKey);
+
+    httpClient.DefaultRequestHeaders.Clear();
+    httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
+    httpClient.DefaultRequestHeaders.Add("authorization", auth);
+    httpClient.DefaultRequestHeaders.Add("x-ms-date", requestDateString);
+    httpClient.DefaultRequestHeaders.Add("x-ms-version", "2018-12-31");
+
+    var requestUri = new Uri($"{baseUrl}/{resourceLink}");
+    var requestBody = $@"[""test param""]";
+
+    var requestContent = new StringContent(requestBody, System.Text.Encoding.UTF8, "application/json");
+    var httpRequest = new HttpRequestMessage { Method = method, Content = requestContent, RequestUri = requestUri };
+
+    var httpResponse = await httpClient.SendAsync(httpRequest);
+    await ReportOutput($"Executed Stored Procedure '{storedProcedureName}", httpResponse);
 }
 
 #endregion
